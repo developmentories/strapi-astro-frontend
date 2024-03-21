@@ -1,0 +1,43 @@
+
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+
+export async function getStaticPaths() {
+  const blogEntries = await fetch(`${import.meta.env.URL}/graphql`,
+  {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      query: `
+			query{
+			blogs{
+				data{
+				id,
+				attributes{
+					Title,
+					Slug,
+				}
+				}
+			}
+			}
+      `,
+    }),
+  });
+  const json = await blogEntries.json();
+
+  return json.data.blogs.data.map((blog) => {
+	return {
+	  params: {
+		slug: blog.attributes.Slug,
+	  },
+	  props : {blog}
+	};
+  });
+
+}
+
+const { blog } = Astro.props;
+const { slug } = Astro.params;
+---
+
+<BlogPost {blog} />
